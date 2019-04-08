@@ -7,6 +7,7 @@
           "label": "C++",
           "id": "tools.cpp",
           "submenu": [
+            { "label": "Batch Classes...", "id": "tools.cpp.class", "command": "cpp:class" },
             { "label": "Generate Code...", "id": "tools.cpp.generate", "command": "cpp:generate" },
             { "label": "Reverse Code...", "id": "tools.cpp.reverse", "command": "cpp:reverse" },
             { "type": "separator" },
