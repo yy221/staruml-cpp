@@ -174,6 +174,7 @@ function create_class (ClassViewMap, _diagram,
     }
 
     for (var method_name in operations) {
+        var methods = operations[method_name];
         options = {
             id:"UMLOperation",
             parent:class1,
@@ -203,39 +204,41 @@ function create_class (ClassViewMap, _diagram,
             }
         };
 
-        var method = app.factory.createModel(options);
-        if (!method) {
-            console.log("Failed to create method");
-            continue;
-        }
+        for (var m=0; m<methods.length; m+=1) {
+            var method = app.factory.createModel(options);
+            if (!method) {
+                console.log("Failed to create method");
+                continue;
+            }
 
-        var param_list = operations[method_name];
-        for (var i=0; i<param_list.length; ++i) {
-            var pos = param_list[i].indexOf(":");
-            options = {
-                id:"UMLParameter",
-                parent:method,
-                field:"parameters",
-                modelInitializer: function (elem) {
-                    if (pos == 0) {
-                        // return type of method is a special parameter with "direction=return"
-                        elem.name = "return";
-                        elem.type = param_list[i].slice(1);
-                        elem.direction = "return";
-                    }
-                    else {
-                        elem.name = param_list[i].slice(0, pos);
-                        if (param_list[i].length > pos +1) {
-                            elem.type = param_list[i].slice(pos + 1);
+            var param_list = methods[m];
+            for (var i=0; i<param_list.length; ++i) {
+                var pos = param_list[i].indexOf(":");
+                var par_options = {
+                    id:"UMLParameter",
+                    parent:method,
+                    field:"parameters",
+                    modelInitializer: function (elem) {
+                        if (pos == 0) {
+                            // return type of method is a special parameter with "direction=return"
+                            elem.name = "return";
+                            elem.type = param_list[i].slice(1);
+                            elem.direction = "return";
+                        }
+                        else {
+                            elem.name = param_list[i].slice(0, pos);
+                            if (param_list[i].length > pos +1) {
+                                elem.type = param_list[i].slice(pos + 1);
+                            }
                         }
                     }
+                };
+                var param = app.factory.createModel(par_options);
+                if (!param) {
+                    console.log("Failed to create parameter");
                 }
-            };
-            var param = app.factory.createModel(options);
-            if (!param) {
-                console.log("Failed to create parameter");
             }
-        }
+        } // for (var i=0; i<methods.length; i+=1)
     }
 
     // build inherits link
@@ -433,7 +436,14 @@ function _handleBatchClass () {
                     }
                 }
 
-                operations[name] = params;
+                var ret = operations[name]
+                if (ret) {
+                    // found overloading method
+                    ret.push(params);
+                }
+                else {
+                    operations[name] = [params];
+                }
             }
         }
         else {
